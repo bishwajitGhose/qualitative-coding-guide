@@ -4,349 +4,589 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Architecture of Qualitative Coding</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f8fafc;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            color: #64748b;
+        }
+        
+        .continuum {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        
+        .continuum-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: #334155;
+        }
+        
+        .color-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+        
+        .continuum-line {
+            flex: 1;
+            height: 2px;
+            background: #cbd5e1;
+        }
+        
+        .stage-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .stage-header {
+            padding: 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .stage-header:hover {
+            background: #f8fafc;
+        }
+        
+        .stage-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .stage-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .stage-title h3 {
+            font-size: 1.5rem;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        
+        .stage-title p {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        
+        .stage-content {
+            padding: 30px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: none;
+        }
+        
+        .stage-content.active {
+            display: block;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+        
+        .content-section h4 {
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .content-section p, .content-section ul {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+        
+        .content-section ul {
+            list-style: none;
+        }
+        
+        .content-section li {
+            margin-bottom: 6px;
+        }
+        
+        .pitfall {
+            color: #dc2626 !important;
+        }
+        
+        .example-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .example-section h2 {
+            font-size: 2rem;
+            color: #1e293b;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .example-stage {
+            margin-bottom: 30px;
+            padding-left: 20px;
+            border-left: 4px solid;
+        }
+        
+        .example-stage h3 {
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .raw-data {
+            background: #dbeafe;
+            padding: 20px;
+            border-radius: 8px;
+            font-style: italic;
+            color: #1e3a8a;
+            border-color: #3b82f6;
+        }
+        
+        .code-item {
+            background: #e0e7ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .code-item strong {
+            color: #3730a3;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .code-item em {
+            color: #4f46e5;
+            font-size: 0.9rem;
+        }
+        
+        .category-box {
+            background: #f3e8ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .category-box h4 {
+            color: #6b21a8;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .tag {
+            background: #e9d5ff;
+            color: #6b21a8;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        
+        .theme-box {
+            background: #ede9fe;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .theme-box h4 {
+            color: #5b21b6;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .theme-box .connects {
+            color: #7c3aed;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+        
+        .theme-box .insight {
+            color: #334155;
+            font-style: italic;
+        }
+        
+        .theory-box {
+            background: #fae8ff;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .theory-box p {
+            color: #334155;
+        }
+        
+        .notice {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 15px;
+        }
+        
+        .principles {
+            background: linear-gradient(135deg, #dbeafe 0%, #f3e8ff 100%);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 40px;
+        }
+        
+        .principles h2 {
+            font-size: 2rem;
+            color: #1e293b;
+            margin-bottom: 20px;
+        }
+        
+        .principles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .principle-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .principle-card h3 {
+            font-weight: bold;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+        
+        .principle-card p {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        
+        .chevron {
+            transition: transform 0.3s;
+        }
+        
+        .chevron.rotated {
+            transform: rotate(90deg);
+        }
+    </style>
 </head>
 <body>
-    <div id="root"></div>
-    
-    <script type="text/babel">
-        const { useState } = React;
-        
-        // Lucide React icons as simple SVG components
-        const ChevronDown = () => (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-        );
-        
-        const ChevronRight = () => (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-        );
-        
-        const Lightbulb = ({ className }) => (
-            <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 18h6"></path>
-                <path d="M10 22h4"></path>
-                <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path>
-            </svg>
-        );
-        
-        const Search = ({ size }) => (
-            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8"></circle>
-                <path d="m21 21-4.35-4.35"></path>
-            </svg>
-        );
-        
-        const Layers = ({ size }) => (
-            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                <polyline points="2 17 12 22 22 17"></polyline>
-                <polyline points="2 12 12 17 22 12"></polyline>
-            </svg>
-        );
-        
-        const Target = ({ size }) => (
-            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <circle cx="12" cy="12" r="6"></circle>
-                <circle cx="12" cy="12" r="2"></circle>
-            </svg>
-        );
+    <div class="container">
+        <div class="header">
+            <h1>The Architecture of Qualitative Coding</h1>
+            <p>Understanding the journey from data to theory through systematic abstraction</p>
+        </div>
 
-        const CodingArchitecture = () => {
-          const [expandedStage, setExpandedStage] = useState(null);
-          const [selectedExample] = useState('community');
-
-          const examples = {
-            community: {
-              raw: "I've been volunteering at the food bank for three years. At first, I just wanted to help. But now I realize it's become my community. These aren't 'clients' to me anymore—they're neighbors. Last week, Maria taught me how to make tamales. We laugh together. The system sees transactions; I see relationships.",
-              
-              descriptiveCodes: [
-                { code: "Volunteer motivation", segment: "wanted to help" },
-                { code: "Relationship evolution", segment: "At first...But now" },
-                { code: "Reframing others", segment: "aren't 'clients'...they're neighbors" },
-                { code: "Reciprocal exchange", segment: "Maria taught me" },
-                { code: "Emotional connection", segment: "We laugh together" },
-                { code: "Institutional vs lived reality", segment: "system sees...I see" }
-              ],
-              
-              categories: {
-                "Identity Transformation": ["Volunteer motivation", "Relationship evolution", "Emotional connection"],
-                "Boundary Disruption": ["Reframing others", "Reciprocal exchange"],
-                "Competing Logics": ["Institutional vs lived reality"]
-              },
-              
-              themes: [
-                {
-                  name: "From Transaction to Kinship: How Sustained Proximity Collapses Helper-Helped Boundaries",
-                  connects: ["Identity Transformation", "Boundary Disruption"],
-                  insight: "Service relationships transform into mutual recognition through repeated interaction"
-                },
-                {
-                  name: "The Accountability Paradox: What Gets Counted vs. What Counts",
-                  connects: ["Competing Logics", "Boundary Disruption"],
-                  insight: "Institutional metrics obscure the relational mechanisms that create impact"
-                }
-              ],
-              
-              theory: "Contributes to theories of care work and professionalization: challenges the service provider/recipient binary; demonstrates how alternative economies of exchange emerge within formal systems"
-            }
-          };
-
-          const stages = [
-            {
-              id: 1,
-              name: "RAW DATA",
-              level: "Concrete Reality",
-              description: "The participant's actual words in context",
-              questions: ["What did they say?", "What happened?", "What's the literal content?"],
-              work: "Reading deeply, listening carefully, staying open",
-              pitfall: "Jumping to interpretation too quickly"
-            },
-            {
-              id: 2,
-              name: "FIRST-LEVEL CODES",
-              level: "Descriptive Labels",
-              description: "Names for what's present in the data",
-              questions: ["What's happening here?", "What topics appear?", "What can I name?"],
-              work: "Labeling, segmenting, identifying discrete elements",
-              pitfall: "Being too literal or too abstract; inconsistent labels"
-            },
-            {
-              id: 3,
-              name: "CATEGORIES",
-              level: "Patterns & Groupings",
-              description: "Organizing codes by similarity and relationship",
-              questions: ["What goes with what?", "Why do these cluster?", "What's the connection?"],
-              work: "Comparing, contrasting, finding relationships, building hierarchy",
-              pitfall: "Forcing patterns; overlooking contradictions"
-            },
-            {
-              id: 4,
-              name: "THEMES",
-              level: "Interpretive Concepts",
-              description: "The meaning that emerges from patterns",
-              questions: ["So what?", "What does this tell us?", "What's the story?"],
-              work: "Synthesizing, interpreting, making claims, seeing beyond data",
-              pitfall: "Staying descriptive; not making an argument"
-            },
-            {
-              id: 5,
-              name: "THEORY",
-              level: "Transferable Insights",
-              description: "Generalizable understanding applicable beyond this case",
-              questions: ["What can we learn?", "How does this connect to bigger ideas?", "What can we now explain?"],
-              work: "Abstracting, connecting to literature, building explanations",
-              pitfall: "Losing connection to data; overgeneralizing"
-            }
-          ];
-
-          const currentExample = examples[selectedExample];
-
-          return (
-            <div className="w-full max-w-7xl mx-auto p-6 bg-slate-50">
-              <div className="mb-8">
-                <h1 className="text-3xl font-bold text-slate-800 mb-2">The Architecture of Qualitative Coding</h1>
-                <p className="text-lg text-slate-600">Understanding the journey from data to theory through systematic abstraction</p>
-              </div>
-
-              {/* The Continuum */}
-              <div className="mb-8 p-6 bg-white rounded-lg shadow-md">
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-blue-600 rounded"></div>
-                    <span className="font-semibold text-slate-700">CONCRETE / PARTICULAR / REAL</span>
-                  </div>
-                  <div className="flex-1 mx-4 border-t-2 border-slate-300"></div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-slate-700">ABSTRACT / GENERAL / THEORETICAL</span>
-                    <div className="w-4 h-4 bg-purple-600 rounded"></div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Stage Cards */}
-              <div className="space-y-4 mb-8">
-                {stages.map((stage, idx) => (
-                  <div key={stage.id} className="bg-white rounded-lg shadow-md overflow-hidden border-l-4"
-                       style={{borderLeftColor: `hsl(${220 + idx * 20}, 70%, ${60 - idx * 5}%)`}}>
-                    <div 
-                      className="p-4 cursor-pointer hover:bg-slate-50"
-                      onClick={() => setExpandedStage(expandedStage === stage.id ? null : stage.id)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold"
-                               style={{backgroundColor: `hsl(${220 + idx * 20}, 70%, ${60 - idx * 5}%)`}}>
-                            {stage.id}
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-bold text-slate-800">{stage.name}</h3>
-                            <p className="text-sm text-slate-500">{stage.level}</p>
-                          </div>
-                        </div>
-                        {expandedStage === stage.id ? <ChevronDown /> : <ChevronRight />}
-                      </div>
-                    </div>
-                    
-                    {expandedStage === stage.id && (
-                      <div className="p-6 bg-slate-50 border-t">
-                        <div className="grid md:grid-cols-2 gap-6">
-                          <div>
-                            <h4 className="font-semibold text-slate-700 mb-2 flex items-center gap-2">
-                              <Target size={16} /> What It Is
-                            </h4>
-                            <p className="text-slate-600">{stage.description}</p>
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-slate-700 mb-2 flex items-center gap-2">
-                              <Search size={16} /> Key Questions
-                            </h4>
-                            <ul className="text-slate-600 space-y-1">
-                              {stage.questions.map((q, i) => (
-                                <li key={i} className="text-sm">• {q}</li>
-                              ))}
-                            </ul>
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-slate-700 mb-2 flex items-center gap-2">
-                              <Layers size={16} /> The Work
-                            </h4>
-                            <p className="text-slate-600 text-sm">{stage.work}</p>
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-red-700 mb-2 flex items-center gap-2">
-                              ⚠️ Common Pitfall
-                            </h4>
-                            <p className="text-red-600 text-sm">{stage.pitfall}</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Working Example */}
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                  <Lightbulb className="text-yellow-500" /> 
-                  Working Example: Watch the Transformation
-                </h2>
-                
-                <div className="space-y-6">
-                  {/* Stage 1: Raw Data */}
-                  <div className="border-l-4 border-blue-600 pl-4">
-                    <h3 className="font-bold text-blue-900 mb-2">1. RAW DATA</h3>
-                    <div className="bg-blue-50 p-4 rounded italic text-slate-700">
-                      "{currentExample.raw}"
-                    </div>
-                  </div>
-
-                  {/* Stage 2: Codes */}
-                  <div className="border-l-4 border-indigo-600 pl-4">
-                    <h3 className="font-bold text-indigo-900 mb-2">2. FIRST-LEVEL CODES</h3>
-                    <div className="space-y-2">
-                      {currentExample.descriptiveCodes.map((item, idx) => (
-                        <div key={idx} className="bg-indigo-50 p-3 rounded">
-                          <div className="flex justify-between items-start">
-                            <span className="font-semibold text-indigo-900">{item.code}</span>
-                            <span className="text-sm text-indigo-600 italic">"{item.segment}"</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <p className="text-sm text-slate-600 mt-3">
-                      → Notice: We've broken the whole into parts and named each part
-                    </p>
-                  </div>
-
-                  {/* Stage 3: Categories */}
-                  <div className="border-l-4 border-purple-600 pl-4">
-                    <h3 className="font-bold text-purple-900 mb-2">3. CATEGORIES</h3>
-                    {Object.entries(currentExample.categories).map(([category, codes], idx) => (
-                      <div key={idx} className="bg-purple-50 p-4 rounded mb-3">
-                        <h4 className="font-bold text-purple-900 mb-2">{category}</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {codes.map((code, i) => (
-                            <span key={i} className="bg-purple-200 px-3 py-1 rounded-full text-sm text-purple-900">
-                              {code}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                    <p className="text-sm text-slate-600 mt-3">
-                      → Notice: Related codes cluster together; patterns emerge
-                    </p>
-                  </div>
-
-                  {/* Stage 4: Themes */}
-                  <div className="border-l-4 border-violet-600 pl-4">
-                    <h3 className="font-bold text-violet-900 mb-2">4. THEMES</h3>
-                    {currentExample.themes.map((theme, idx) => (
-                      <div key={idx} className="bg-violet-50 p-4 rounded mb-3">
-                        <h4 className="font-bold text-violet-900 mb-2">{theme.name}</h4>
-                        <p className="text-sm text-violet-700 mb-2">
-                          <span className="font-semibold">Connects:</span> {theme.connects.join(" + ")}
-                        </p>
-                        <p className="text-slate-700 italic">
-                          → {theme.insight}
-                        </p>
-                      </div>
-                    ))}
-                    <p className="text-sm text-slate-600 mt-3">
-                      → Notice: We're now making claims about meaning, not just describing content
-                    </p>
-                  </div>
-
-                  {/* Stage 5: Theory */}
-                  <div className="border-l-4 border-fuchsia-600 pl-4">
-                    <h3 className="font-bold text-fuchsia-900 mb-2">5. THEORETICAL CONTRIBUTION</h3>
-                    <div className="bg-fuchsia-50 p-4 rounded">
-                      <p className="text-slate-700">{currentExample.theory}</p>
-                    </div>
-                    <p className="text-sm text-slate-600 mt-3">
-                      → Notice: We've moved beyond this one case to something generalizable
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Key Principles */}
-              <div className="mt-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6">
-                <h2 className="text-2xl font-bold text-slate-800 mb-4">Essential Principles</h2>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-white p-4 rounded shadow-sm">
-                    <h3 className="font-bold text-slate-800 mb-2">1. Analytic Movement</h3>
-                    <p className="text-sm text-slate-600">You move UP (abstracting) and DOWN (checking against data) constantly. It's not a one-way journey.</p>
-                  </div>
-                  <div className="bg-white p-4 rounded shadow-sm">
-                    <h3 className="font-bold text-slate-800 mb-2">2. Data → Interpretation</h3>
-                    <p className="text-sm text-slate-600">Early stages stay close to data. Later stages require bold interpretation. Both are necessary.</p>
-                  </div>
-                  <div className="bg-white p-4 rounded shadow-sm">
-                    <h3 className="font-bold text-slate-800 mb-2">3. Multiple Cycles</h3>
-                    <p className="text-sm text-slate-600">You'll code the same data multiple times, each time seeing something new. This is normal and productive.</p>
-                  </div>
-                  <div className="bg-white p-4 rounded shadow-sm">
-                    <h3 className="font-bold text-slate-800 mb-2">4. Deliberate Reduction</h3>
-                    <p className="text-sm text-slate-600">From hundreds of data points to dozens of codes to a few categories to core themes. You're condensing meaning.</p>
-                  </div>
-                </div>
-              </div>
+        <div class="continuum">
+            <div class="continuum-label">
+                <div class="color-box" style="background: #3b82f6;"></div>
+                <span>CONCRETE / PARTICULAR / REAL</span>
             </div>
-          );
-        };
+            <div class="continuum-line"></div>
+            <div class="continuum-label">
+                <span>ABSTRACT / GENERAL / THEORETICAL</span>
+                <div class="color-box" style="background: #a855f7;"></div>
+            </div>
+        </div>
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<CodingArchitecture />);
+        <div id="stages-container"></div>
+
+        <div class="example-section">
+            <h2>💡 Working Example: Watch the Transformation</h2>
+            
+            <div class="example-stage" style="border-color: #3b82f6;">
+                <h3 style="color: #1e40af;">1. RAW DATA</h3>
+                <div class="raw-data">
+                    "I've been volunteering at the food bank for three years. At first, I just wanted to help. But now I realize it's become my community. These aren't 'clients' to me anymore—they're neighbors. Last week, Maria taught me how to make tamales. We laugh together. The system sees transactions; I see relationships."
+                </div>
+            </div>
+
+            <div class="example-stage" style="border-color: #4f46e5;">
+                <h3 style="color: #3730a3;">2. FIRST-LEVEL CODES</h3>
+                <div class="code-item">
+                    <strong>Volunteer motivation</strong>
+                    <em>"wanted to help"</em>
+                </div>
+                <div class="code-item">
+                    <strong>Relationship evolution</strong>
+                    <em>"At first...But now"</em>
+                </div>
+                <div class="code-item">
+                    <strong>Reframing others</strong>
+                    <em>"aren't 'clients'...they're neighbors"</em>
+                </div>
+                <div class="code-item">
+                    <strong>Reciprocal exchange</strong>
+                    <em>"Maria taught me"</em>
+                </div>
+                <div class="code-item">
+                    <strong>Emotional connection</strong>
+                    <em>"We laugh together"</em>
+                </div>
+                <div class="code-item">
+                    <strong>Institutional vs lived reality</strong>
+                    <em>"system sees...I see"</em>
+                </div>
+                <p class="notice">→ Notice: We've broken the whole into parts and named each part</p>
+            </div>
+
+            <div class="example-stage" style="border-color: #9333ea;">
+                <h3 style="color: #6b21a8;">3. CATEGORIES</h3>
+                <div class="category-box">
+                    <h4>Identity Transformation</h4>
+                    <div class="tag-container">
+                        <span class="tag">Volunteer motivation</span>
+                        <span class="tag">Relationship evolution</span>
+                        <span class="tag">Emotional connection</span>
+                    </div>
+                </div>
+                <div class="category-box">
+                    <h4>Boundary Disruption</h4>
+                    <div class="tag-container">
+                        <span class="tag">Reframing others</span>
+                        <span class="tag">Reciprocal exchange</span>
+                    </div>
+                </div>
+                <div class="category-box">
+                    <h4>Competing Logics</h4>
+                    <div class="tag-container">
+                        <span class="tag">Institutional vs lived reality</span>
+                    </div>
+                </div>
+                <p class="notice">→ Notice: Related codes cluster together; patterns emerge</p>
+            </div>
+
+            <div class="example-stage" style="border-color: #7c3aed;">
+                <h3 style="color: #5b21b6;">4. THEMES</h3>
+                <div class="theme-box">
+                    <h4>From Transaction to Kinship: How Sustained Proximity Collapses Helper-Helped Boundaries</h4>
+                    <p class="connects"><strong>Connects:</strong> Identity Transformation + Boundary Disruption</p>
+                    <p class="insight">→ Service relationships transform into mutual recognition through repeated interaction</p>
+                </div>
+                <div class="theme-box">
+                    <h4>The Accountability Paradox: What Gets Counted vs. What Counts</h4>
+                    <p class="connects"><strong>Connects:</strong> Competing Logics + Boundary Disruption</p>
+                    <p class="insight">→ Institutional metrics obscure the relational mechanisms that create impact</p>
+                </div>
+                <p class="notice">→ Notice: We're now making claims about meaning, not just describing content</p>
+            </div>
+
+            <div class="example-stage" style="border-color: #c026d3;">
+                <h3 style="color: #86198f;">5. THEORETICAL CONTRIBUTION</h3>
+                <div class="theory-box">
+                    <p>Contributes to theories of care work and professionalization: challenges the service provider/recipient binary; demonstrates how alternative economies of exchange emerge within formal systems</p>
+                </div>
+                <p class="notice">→ Notice: We've moved beyond this one case to something generalizable</p>
+            </div>
+        </div>
+
+        <div class="principles">
+            <h2>Essential Principles</h2>
+            <div class="principles-grid">
+                <div class="principle-card">
+                    <h3>1. Analytic Movement</h3>
+                    <p>You move UP (abstracting) and DOWN (checking against data) constantly. It's not a one-way journey.</p>
+                </div>
+                <div class="principle-card">
+                    <h3>2. Data → Interpretation</h3>
+                    <p>Early stages stay close to data. Later stages require bold interpretation. Both are necessary.</p>
+                </div>
+                <div class="principle-card">
+                    <h3>3. Multiple Cycles</h3>
+                    <p>You'll code the same data multiple times, each time seeing something new. This is normal and productive.</p>
+                </div>
+                <div class="principle-card">
+                    <h3>4. Deliberate Reduction</h3>
+                    <p>From hundreds of data points to dozens of codes to a few categories to core themes. You're condensing meaning.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const stages = [
+            {
+                id: 1,
+                name: "RAW DATA",
+                level: "Concrete Reality",
+                color: "hsl(220, 70%, 60%)",
+                description: "The participant's actual words in context",
+                questions: ["What did they say?", "What happened?", "What's the literal content?"],
+                work: "Reading deeply, listening carefully, staying open",
+                pitfall: "Jumping to interpretation too quickly"
+            },
+            {
+                id: 2,
+                name: "FIRST-LEVEL CODES",
+                level: "Descriptive Labels",
+                color: "hsl(240, 70%, 55%)",
+                description: "Names for what's present in the data",
+                questions: ["What's happening here?", "What topics appear?", "What can I name?"],
+                work: "Labeling, segmenting, identifying discrete elements",
+                pitfall: "Being too literal or too abstract; inconsistent labels"
+            },
+            {
+                id: 3,
+                name: "CATEGORIES",
+                level: "Patterns & Groupings",
+                color: "hsl(260, 70%, 50%)",
+                description: "Organizing codes by similarity and relationship",
+                questions: ["What goes with what?", "Why do these cluster?", "What's the connection?"],
+                work: "Comparing, contrasting, finding relationships, building hierarchy",
+                pitfall: "Forcing patterns; overlooking contradictions"
+            },
+            {
+                id: 4,
+                name: "THEMES",
+                level: "Interpretive Concepts",
+                color: "hsl(280, 70%, 45%)",
+                description: "The meaning that emerges from patterns",
+                questions: ["So what?", "What does this tell us?", "What's the story?"],
+                work: "Synthesizing, interpreting, making claims, seeing beyond data",
+                pitfall: "Staying descriptive; not making an argument"
+            },
+            {
+                id: 5,
+                name: "THEORY",
+                level: "Transferable Insights",
+                color: "hsl(300, 70%, 40%)",
+                description: "Generalizable understanding applicable beyond this case",
+                questions: ["What can we learn?", "How does this connect to bigger ideas?", "What can we now explain?"],
+                work: "Abstracting, connecting to literature, building explanations",
+                pitfall: "Losing connection to data; overgeneralizing"
+            }
+        ];
+
+        function createStageCard(stage) {
+            const card = document.createElement('div');
+            card.className = 'stage-card';
+            card.style.borderLeft = `4px solid ${stage.color}`;
+
+            const header = document.createElement('div');
+            header.className = 'stage-header';
+            header.onclick = () => toggleStage(stage.id);
+
+            header.innerHTML = `
+                <div class="stage-info">
+                    <div class="stage-number" style="background: ${stage.color};">${stage.id}</div>
+                    <div class="stage-title">
+                        <h3>${stage.name}</h3>
+                        <p>${stage.level}</p>
+                    </div>
+                </div>
+                <span class="chevron" id="chevron-${stage.id}">▶</span>
+            `;
+
+            const content = document.createElement('div');
+            content.className = 'stage-content';
+            content.id = `content-${stage.id}`;
+
+            content.innerHTML = `
+                <div class="content-grid">
+                    <div class="content-section">
+                        <h4>🎯 What It Is</h4>
+                        <p>${stage.description}</p>
+                    </div>
+                    <div class="content-section">
+                        <h4>🔍 Key Questions</h4>
+                        <ul>
+                            ${stage.questions.map(q => `<li>• ${q}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="content-section">
+                        <h4>📊 The Work</h4>
+                        <p>${stage.work}</p>
+                    </div>
+                    <div class="content-section">
+                        <h4 class="pitfall">⚠️ Common Pitfall</h4>
+                        <p class="pitfall">${stage.pitfall}</p>
+                    </div>
+                </div>
+            `;
+
+            card.appendChild(header);
+            card.appendChild(content);
+            return card;
+        }
+
+        function toggleStage(id) {
+            const content = document.getElementById(`content-${id}`);
+            const chevron = document.getElementById(`chevron-${id}`);
+            
+            if (content.classList.contains('active')) {
+                content.classList.remove('active');
+                chevron.classList.remove('rotated');
+            } else {
+                content.classList.add('active');
+                chevron.classList.add('rotated');
+            }
+        }
+
+        const container = document.getElementById('stages-container');
+        stages.forEach(stage => {
+            container.appendChild(createStageCard(stage));
+        });
     </script>
 </body>
 </html>
